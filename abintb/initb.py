@@ -1,14 +1,15 @@
 import numpy as np
-from scipy.linalg import expm
 import matplotlib.pyplot as plt
-import pylab as pl
-import sys
-import latexify as lf 
 from time import time
+from scipy.linalg import expm
+
+#import pylab as pl
+#import sys
+#import latexify as lf 
 #from oneDimBerryPhase_class import BerryPhase 
 
 
-class SSHIniData:
+class IniModel:
 
 	def __init__(self, tau, deltau, ctrl, knum=12*6+1, dt=.1, ham_choose = 3,iniband = 'down'):
 		
@@ -44,6 +45,7 @@ class SSHIniData:
 		tau = self.tau
 		deltau = self.deltau #+ ctrlt
 		val = self.ham_choose 
+
 		if val == 0:
 			dx = tau+deltau + (tau-deltau) * np.cos(k-ctrlt) 
 			dy = (tau-deltau) * np.sin(k-ctrlt) 
@@ -135,31 +137,27 @@ class SSHIniData:
 if __name__ == "__main__":
 
 	dt = .1
-	E0 = .1#1.0 
-	knum = 2000 
-	freq = .5 
+	E0 = 1. 
+	knum = 100 
+	freq = 1. 
 
 	tau = 1. 
 	deltau = .5#-.3
 	#phi_ini = [[1],[0]]
 
 	n_tot = 4000 
-	#t_rel = (np.array(range(n_tot-1))-(n_tot-1)/2)*dt
 	t_rel = (np.array(range(n_tot-1))-2000)*dt
-	#ctrl =  np.exp(-(t_rel)**2/6000.) * E0 * np.cos(freq*t_rel)
 	ctrl =  E0 * np.cos(freq*t_rel)
-	#x = np.linspace(100,-100,n_tot-1)
-	#ctrl = E0 * (1./(1+np.exp(-x)) ) * np.cos(freq*t_rel)
-	#ctrl = [0.]*(n_tot-1)
-	plt.plot(t_rel, ctrl)
-	plt.show()
 
-	init = SSHIniData(tau, deltau, ctrl, knum=knum, dt=dt)
-#	spec = init.spectrum()
-#	print spec
-#	plt.plot(init.eps,spec[:,0])
-#	plt.plot(init.eps,spec[:,1])
-#	plt.show()
+	init = IniModel(tau, deltau, ctrl, knum=knum, dt=dt)
+
+	'''
+	spec = init.spectrum()
+	print spec
+	plt.plot(init.eps,spec[:,0])
+	plt.plot(init.eps,spec[:,1])
+	plt.show()
+	'''
 	'''
 	phi = init.phi_t(k = 0.)
 	plt.plot(np.real(np.conjugate(phi)[:,1,:]*phi[:,1,:]))
@@ -170,19 +168,3 @@ if __name__ == "__main__":
 	ti = time()
 	cvec = init.clc_cvec()
 	print np.shape(cvec), time() - ti
-
-	bp = BerryPhase(cvec[:,:,:])
-	bpp, adi = bp.phase()
-	chern = -bpp.imag[:-1]/(2*np.pi)
-	plt.plot(t_rel.T,chern, label = 'imag')
-	plt.legend()
-	plt.title('dt = %.1f' %(deltau))
-	#plt.ylim(-2,2)
-	plt.xlabel('time')
-	plt.ylabel('berry number')
-	plt.show()
-
-	
-	plt.plot(t_rel.T[:-1],100*np.diff(chern))
-	plt.show()
-	print (chern[-50]-chern[-1])/(t_rel.T[-50]-t_rel.T[-1]) 
