@@ -22,6 +22,7 @@ class PES:
 		self.nearZero = self.iniData.zero
 		self.input_den = self.iniData.input_den 
 		self.epsFx =  self.iniData.eps
+
 		self.width = width
 		self.c_vec = c_vec
 		self.std = std
@@ -33,6 +34,7 @@ class PES:
 		self.E0 = E0
 		self.freq = freq
 		self.iniband = self.iniData.iniband
+
 
 	def st_vec(self, tp, w) :
 
