@@ -1,15 +1,15 @@
-import sys
-from time import time
 import numpy as np
-from itertools import product
 import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm, SymLogNorm
+from time import time
 
 import Glf90_v2 as G90
-#from lessG_class import lessG
-from sshIniData import SSHIniData
+#from sshIniData import SSHIniData
+import qn, tb
 
 class PES:
+	def __init__(self, QnIni, phi_kall, dtp=1., std=15):
+
 
 	def __init__(self, iniData, c_vec, tin, E0, freq, dtp=1., std=10, width = 1):
 
@@ -23,7 +23,7 @@ class PES:
 		self.input_den = self.iniData.input_den 
 		self.epsFx =  self.iniData.eps
 
-		self.width = width
+	#	self.width = width
 		self.c_vec = c_vec
 		self.std = std
 		self.t_rang = 3*std
@@ -31,8 +31,8 @@ class PES:
 		self.dtp = dtp
 		self.w_num = 2*self.ktimes
 		self.w_int = np.array(range(self.w_num+1))*-2*(np.pi+self.nearZero)/(self.w_num)+np.pi
-		self.E0 = E0
-		self.freq = freq
+		#self.E0 = E0
+		#self.freq = freq
 		self.iniband = self.iniData.iniband
 
 
@@ -45,9 +45,7 @@ class PES:
 
 		time = dt*np.array(range(n_t))+tp-t_rang
 		st_vec = dt*np.exp(-((time-tp)/std)**2)*np.exp(-1j*w*(time-tp))
-		#plt.plot(time,st_vec/np.sum(np.abs(st_vec)*dt))
-		#plt.show()
-		return st_vec/np.sum(np.abs(st_vec))#*np.sqrt(1.42))#(len(st_vec)*dt/np.pi)#(sum(abs(st_vec)))
+		return st_vec/np.sum(np.abs(st_vec))
 
 
 	def gen_lessG(self,c_veck1,c_veck2,input_denk):

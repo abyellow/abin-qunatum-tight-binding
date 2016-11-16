@@ -10,7 +10,7 @@ class QnModel:
 	"""
 	Initial data/conditions of Quantum Hamiltonian and initial states.
 	"""
-	def __init__(self, QnIni,tb_model=False):
+	def __init__(self, QnIni, tb_model=False):
 	
 		self.QnIni = QnIni
 		self.k = QnIni.k 
