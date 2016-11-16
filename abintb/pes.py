@@ -8,32 +8,21 @@ import Glf90_v2 as G90
 import qn, tb
 
 class PES:
-	def __init__(self, QnIni, phi_kall, dtp=1., std=15):
 
+	def __init__(self, QnIni, phi_kall, kall, dos, tin, dtp=1., std=15):
 
-	def __init__(self, iniData, c_vec, tin, E0, freq, dtp=1., std=10, width = 1):
+		self.QnIni = QnIni
+		self.dt = QnIni.dt
 
-		self.iniData = iniData
-		self.dt = self.iniData.dt
-		self.ktimes= self.iniData.knum
-		self.tau = self.iniData.tau
-		self.deltau = self.iniData.deltau
-		self.ham_choose = self.iniData.ham_choose
-		self.nearZero = self.iniData.zero
-		self.input_den = self.iniData.input_den 
-		self.epsFx =  self.iniData.eps
-
-	#	self.width = width
-		self.c_vec = c_vec
+		self.c_vec = phi_kall
+		self.dos = dos
 		self.std = std
 		self.t_rang = 3*std
 		self.tin = tin
 		self.dtp = dtp
-		self.w_num = 2*self.ktimes
-		self.w_int = np.array(range(self.w_num+1))*-2*(np.pi+self.nearZero)/(self.w_num)+np.pi
-		#self.E0 = E0
-		#self.freq = freq
-		self.iniband = self.iniData.iniband
+		self.kall = kall
+		self.w_int = np.linspace(-np.pi,np.pi,2*len(kall))
+
 
 
 	def st_vec(self, tp, w) :
@@ -55,7 +44,6 @@ class PES:
 
 		ts = time()	
 		Gless = np.matrix(np.zeros((n_tot,n_tot),dtype=complex))
-		#print 'cvec size for Gless: (where should be wrong!)',np.sum(c_veck2-np.conj(c_veck2)), np.shape(c_veck2.T)
 		Gless = G90.gless_v2(np.conj(c_veck1), c_veck2, input_denk, n_tot, k_tot)/(2*np.sum(input_denk[:,0]*input_denk[:,1]))
 		print 'Gless_fortran_time:', time()-ts
 
@@ -76,6 +64,7 @@ class PES:
 		n_tp = int((tp - t_ini)/dt)
 		n_lb = n_tp - n_std
 		n_ub = n_tp + n_std
+		#print n_lb, n_ub
 		st_vec1 = np.matrix(self.st_vec(tp,omega))
 		PES = (np.conj(st_vec1)*Glsk[n_lb:n_ub,n_lb:n_ub]*(st_vec1).T)[0,0]
 		#print PES, np.shape(PES)
@@ -87,30 +76,21 @@ class PES:
 	
 	def clc_PES(self,Glsk,tp):
 
-		w_int = -self.w_int
-		width = self.width
+		w_int = self.w_int
 		PESmtx = []
 		#print 'generated PESmtx'
 		for i, omega in enumerate(w_int):
 			ans = self.int_PES(Glsk,omega,tp)
-			for j in range(width):
-				PESmtx.append(ans)
+			PESmtx.append(ans)
 		
 		return PESmtx
 
 
 	def final_run(self, tp, pau = 'i'):
 
-		epsFx = self.epsFx
-		dt = self.dt
-		ktimes = self.ktimes
-		deltau = self.deltau
-		ham_choose = self.ham_choose
-		iniband = self.iniband
-		std = self.std
-		E0 = self.E0
-		freq = self.freq
-		input_den = self.input_den 
+		epsFx = self.kall
+		ktimes = len(self.kall)
+		input_den = self.dos 
 
 		c_vec1 = self.c_vec 
 		c_vec2 = np.zeros(np.shape(c_vec1), dtype = complex)
@@ -135,14 +115,11 @@ class PES:
 			c_veck2 = c_vec2[k:k+1,:,:]
 
 			Gls = self.gen_lessG(c_veck1,c_veck2,denk)
-			#n_tot = len(c_veck1[0,0,:])
-			#Gls = 1j*np.matrix(np.ones((n_tot,n_tot),dtype=complex))
-			#print Gls
 			PESmtx = self.clc_PES(Gls,tp)
 			PES2D.append(PESmtx)
 			print 'k = %d,  eps = %.2f' %(k,epsFx[k])
-			
-		save_name = 'data/PES2ssh_ham_%d_dt_%.2f_ktimes_%d_tp_%.1f_E0_%.1f_freq_%.2f_deltau_%.1f_paui_%s_std_%.1f_band_%s.txt' %(ham_choose, dt,ktimes,tp,E0,freq,deltau,pau,std,iniband)
+
+		save_name = self.QnIni.save_name+'.txt'	
 		np.savetxt(save_name,zip(*PES2D))
 		
 		return zip(*PES2D)
@@ -151,8 +128,8 @@ class PES:
 
 	def plot(self,PESmtx,ax,bar_val=True,label_val=True, color = 'RdYlBu'):
 
-
-		cax = ax.imshow(PESmtx,cmap = color, vmin=-1.,vmax=1.,norm=SymLogNorm(10**-4), extent = [-3.14/2.,3.14/2.,-3.14,3.14])
+		cax = ax.imshow(PESmtx,cmap = color, vmin=-1.,vmax=1.,norm=SymLogNorm(10**-4),\
+					 extent = [-3.14/2.,3.14/2.,-3.14,3.14])
 		
 		fsize = 16
 		plt.xticks([-1.5,-.75,0.0,.75,1.5], ['-1.0','-0.5','0.0','0.5','1.0'],fontsize = fsize)
@@ -169,11 +146,42 @@ class PES:
 			bar = plt.colorbar(cax,ticks=tick_locs,shrink=0.6)
 			bar.set_ticklabels(tick_labels)
 			bar.update_ticks()
-		#lf.latexify()
 		return cax
 
 
 
-#if __name__ == "__main__":
+if __name__ == "__main__":
 
 	
+	dt = .1
+	E0 = 1. 
+	knum = 10 
+	freq = 1. 
+
+	tau = 1. 
+	deltau = .5#-.3
+	keps = np.linspace(-np.pi,np.pi,knum)
+
+	n_tot = 4000 
+	t_rel = (np.array(range(n_tot-1))-2000)*dt
+	ctrli =  E0 * np.cos(freq*t_rel)
+	cond1 = qn.QnIni(k=0.001, ctrlt=ctrli)
+
+	ti = time()
+	tb1 = tb.TbModel(cond1, keps)	
+	ckall = np.array(tb1.phi_kall())
+	print ckall.shape
+	print 'run_time: ', time() - ti
+
+	do = np.ones(len(keps))
+	dos = np.sqrt(do/sum(do))
+	dos2 = np.array(zip(dos,dos))
+	tin = -200
+	pes1 = PES(cond1, ckall, keps, dos2, tin)
+	PESmtx1 = pes1.final_run(tp=0)
+
+	fig = plt.figure()
+	ax1 = fig.add_subplot(111)
+
+	pes1.plot(PESmtx1,ax1)
+	plt.show()

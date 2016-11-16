@@ -109,7 +109,7 @@ class QnIni:
 		self.pau_i = np.array([[1,0],[0,1]])
 
 		self.H0 = np.zeros((2,2))
-
+		self.save_name = 'save_name_test'
 
 	def dvec(self,ctrl):
 
