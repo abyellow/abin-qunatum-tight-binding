@@ -9,90 +9,28 @@ import qn, tb
 
 class PES:
 
-	def __init__(self, QnIni, phi_kall, kall, dos, tin, dtp=1., std=15):
+	def __init__(self, QnIni, phi_kall, kall, dos, tin, std=15, pau='i'):
 
 		self.QnIni = QnIni
 		self.dt = QnIni.dt
 
-		self.c_vec = phi_kall
+		self.c_vec1 = phi_kall
+		self.c_vec2 = self.gen_cvec2(pau)
+
 		self.dos = dos
 		self.std = std
 		self.t_rang = 3*std
+
 		self.tin = tin
-		self.dtp = dtp
 		self.kall = kall
-		self.w_int = np.linspace(-np.pi,np.pi,2*len(kall))
-
-
-
-	def st_vec(self, tp, w) :
-
-		dt = self.dt
-		std = self.std
-		t_rang = self.t_rang	
-		n_t = 2*int(t_rang/dt)
-
-		time = dt*np.array(range(n_t))+tp-t_rang
-		st_vec = dt*np.exp(-((time-tp)/std)**2)*np.exp(-1j*w*(time-tp))
-		return st_vec/np.sum(np.abs(st_vec))
-
-
-	def gen_lessG(self,c_veck1,c_veck2,input_denk):
-
-		n_tot = len(c_veck1[0,0,:])
-		k_tot = len(c_veck1[:,0,0])
-
-		ts = time()	
-		Gless = np.matrix(np.zeros((n_tot,n_tot),dtype=complex))
-		Gless = G90.gless_v2(np.conj(c_veck1), c_veck2, input_denk, n_tot, k_tot)/(2*np.sum(input_denk[:,0]*input_denk[:,1]))
-		print 'Gless_fortran_time:', time()-ts
-
-		return 1j*Gless
-
-
-	def int_PES(self,Glsk,omega,tp):
-
-		std = self.std
-		dt = self.dt
-		t_ini = self.tin	
-		c_vec = self.c_vec
-		t_rang = self.t_rang
-		dtp = self.dtp
-
-		n_std = int(t_rang/dt)
-		n_tot = len(c_vec[0,0,:])-2*n_std
-		n_tp = int((tp - t_ini)/dt)
-		n_lb = n_tp - n_std
-		n_ub = n_tp + n_std
-		#print n_lb, n_ub
-		st_vec1 = np.matrix(self.st_vec(tp,omega))
-		PES = (np.conj(st_vec1)*Glsk[n_lb:n_ub,n_lb:n_ub]*(st_vec1).T)[0,0]
-		#print PES, np.shape(PES)
-		#PES = (np.conj(st_vec1)*(st_vec1).T)[0,0]
 		
-		return np.imag(PES)
+		self.w_num = 200
+		self.w_int = np.linspace(-np.pi,np.pi,self.w_num)
 
 
-	
-	def clc_PES(self,Glsk,tp):
-
-		w_int = self.w_int
-		PESmtx = []
-		#print 'generated PESmtx'
-		for i, omega in enumerate(w_int):
-			ans = self.int_PES(Glsk,omega,tp)
-			PESmtx.append(ans)
+	def gen_cvec2(self,pau):
 		
-		return PESmtx
-
-
-	def final_run(self, tp, pau = 'i'):
-
-		epsFx = self.kall
-		ktimes = len(self.kall)
-		input_den = self.dos 
-
-		c_vec1 = self.c_vec 
+		c_vec1 = self.c_vec1	
 		c_vec2 = np.zeros(np.shape(c_vec1), dtype = complex)
 
 		if pau == 'z':
@@ -106,18 +44,96 @@ class PES:
 
 		else:
 			c_vec2[:] = c_vec1[:]
+		return c_vec2
 
-		#print 'cvec1-cvec2: ', np.sum(c_vec1[:,1,:] - c_vec2[:,1,:])
+	def st_vec(self, tp, omega) :
+
+		w = omega
+		dt = self.dt
+		std = self.std
+		t_rang = self.t_rang	
+		n_t = 2*int(t_rang/dt)
+
+		time = dt*np.array(range(n_t))+tp-t_rang
+		st_vec = dt*np.exp(-((time-tp)/std)**2)*np.exp(-1j*w*(time-tp))
+		return st_vec/np.sum(np.abs(st_vec))
+
+
+	def gen_lessG(self,c_veck1,c_veck2,denk):
+
+		n_tot = len(c_veck1[0,0,:])
+		k_tot = len(c_veck1[:,0,0])
+
+		ts = time()	
+		Gless = np.matrix(np.zeros((n_tot,n_tot),dtype=complex))
+		Gless = G90.gless_v2(np.conj(c_veck1), c_veck2, denk, n_tot, k_tot)/(2*np.sum(denk[:,0]*denk[:,1]))
+		print 'Gless_fortran_time:', time()-ts
+
+		return 1j*Gless
+
+
+	def int_lessG(self,Glsk,omega,tp):
+		
+		dt = self.dt
+		t_ini = self.tin
+		c_vec = self.c_vec1
+		t_rang = self.t_rang
+
+		if tp < t_ini + t_rang:
+			print 'Error: Your imput initial time is %.2f so you can only start out tp time after %.2f'%(tin,tin+t_rang)
+			
+		else:
+			n_std = int(t_rang/dt)
+			n_tot = len(c_vec[0,0,:])-2*n_std
+			n_tp = int((tp - t_ini)/dt)
+			n_lb = n_tp - n_std
+			n_ub = n_tp + n_std
+			st_vec1 = np.matrix(self.st_vec(tp,omega))
+			PES = (np.conj(st_vec1)*Glsk[n_lb:n_ub,n_lb:n_ub]*(st_vec1).T)[0,0]
+		
+		return np.imag(PES)
+
+
+	
+	def clc_PESk(self,Glsk,tp):
+
+		w_int = self.w_int
+		PESmtx = []
+		#print 'generated PESmtx'
+		for i, omega in enumerate(w_int):
+			ans = self.int_lessG(Glsk,omega,tp)
+			PESmtx.append(ans)
+		
+		return PESmtx
+
+
+	def gen_PESk(self, knum, tp):
+
+		k = knum		
+		eps = self.kall
+		den = self.dos 
+
+		c_vec1 = self.c_vec1 
+		c_vec2 = self.c_vec2
+
+		denk = den[k:k+1,:] 
+		c_veck1 = c_vec1[k:k+1,:,:]
+		c_veck2 = c_vec2[k:k+1,:,:]
+
+		Glsk = self.gen_lessG(c_veck1,c_veck2,denk)
+		PESk = self.clc_PESk(Glsk,tp)
+		print 'knum = %d,  eps = %.2f' %(k,eps[k])
+		
+		return PESk
+
+		
+	def gen_PESall(self, tp):
+		
+		ktimes = len(self.kall)
 		PES2D = []
 		for k in range(ktimes):
-			denk = input_den[k:k+1,:] 
-			c_veck1 = c_vec1[k:k+1,:,:]
-			c_veck2 = c_vec2[k:k+1,:,:]
-
-			Gls = self.gen_lessG(c_veck1,c_veck2,denk)
-			PESmtx = self.clc_PES(Gls,tp)
-			PES2D.append(PESmtx)
-			print 'k = %d,  eps = %.2f' %(k,epsFx[k])
+			PESk = self.gen_PESk(k,tp)
+			PES2D.append(PESk)
 
 		save_name = self.QnIni.save_name+'.txt'	
 		np.savetxt(save_name,zip(*PES2D))
@@ -177,8 +193,8 @@ if __name__ == "__main__":
 	dos = np.sqrt(do/sum(do))
 	dos2 = np.array(zip(dos,dos))
 	tin = -200
-	pes1 = PES(cond1, ckall, keps, dos2, tin)
-	PESmtx1 = pes1.final_run(tp=0)
+	pes1 = PES(cond1, ckall, keps, dos2, tin,pau= 'x')
+	PESmtx1 = pes1.gen_PESall(tp=0)
 
 	fig = plt.figure()
 	ax1 = fig.add_subplot(111)
