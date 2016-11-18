@@ -4,7 +4,6 @@ from matplotlib.colors import LogNorm, SymLogNorm
 from time import time
 
 import Glf90_v2 as G90
-#from sshIniData import SSHIniData
 import qn, tb
 
 class PES:
@@ -122,7 +121,7 @@ class PES:
 
 		Glsk = self.gen_lessG(c_veck1,c_veck2,denk)
 		PESk = self.clc_PESk(Glsk,tp)
-		print 'knum = %d,  eps = %.2f' %(k,eps[k])
+		#print 'knum = %d,  eps = %.2f' %(k,eps[k])
 		
 		return PESk
 
@@ -135,7 +134,7 @@ class PES:
 			PESk = self.gen_PESk(k,tp)
 			PES2D.append(PESk)
 
-		save_name = self.QnIni.save_name+'.txt'	
+		save_name = 'data/'+self.QnIni.save_name+'.txt'	
 		np.savetxt(save_name,zip(*PES2D))
 		
 		return zip(*PES2D)
@@ -193,9 +192,10 @@ if __name__ == "__main__":
 	dos = np.sqrt(do/sum(do))
 	dos2 = np.array(zip(dos,dos))
 	tin = -200
-	pes1 = PES(cond1, ckall, keps, dos2, tin,pau= 'x')
+	pes1 = PES(cond1, ckall, keps, dos2, tin, pau= 'x')
 	PESmtx1 = pes1.gen_PESall(tp=0)
-
+	#print PESmtx1
+	#print type(PESmtx1)
 	fig = plt.figure()
 	ax1 = fig.add_subplot(111)
 
