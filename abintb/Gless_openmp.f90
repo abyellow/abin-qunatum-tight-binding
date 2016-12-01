@@ -14,7 +14,7 @@
     integer*4 :: t1 
     integer*4 :: t2 
 
-    !$OMP PARALLEL DO private(c_vec1,c_vec2,den) shared(Gans)
+    !$OMP PARALLEL DO shared(c_vec1,c_vec2,den,Gans)
     do t1 = 1, n_t
         do t2 = 1, n_t
             Gans(t1,t2) = sum(sum((c_vec1(:,:,t1))*c_vec2(:,:,t2),dim=2)*den(:,1)*den(:,2))

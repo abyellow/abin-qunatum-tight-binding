@@ -3,7 +3,8 @@ import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm, SymLogNorm
 from time import time
 
-import Glf90_v2 as G90
+import Glf90_omp 
+import Glf90 
 import qn, tb
 
 class PES:
@@ -25,7 +26,7 @@ class PES:
 		
 		self.w_num = 200
 		self.w_int = np.linspace(-np.pi,np.pi,self.w_num)
-
+		self.parallel = False
 
 	def gen_cvec2(self,pau):
 		
@@ -65,7 +66,11 @@ class PES:
 
 		ts = time()	
 		Gless = np.matrix(np.zeros((n_tot,n_tot),dtype=complex))
-		Gless = G90.gless_v2(np.conj(c_veck1), c_veck2, denk, n_tot, k_tot)/(2*np.sum(denk[:,0]*denk[:,1]))
+		if self.parallel ==True:
+			Gless = Glf90_omp.gless_v2(np.conj(c_veck1), c_veck2, denk, n_tot, k_tot)/(2*np.sum(denk[:,0]*denk[:,1]))
+		else:
+			Gless = Glf90.gless_v2(np.conj(c_veck1), c_veck2, denk, n_tot, k_tot)/(2*np.sum(denk[:,0]*denk[:,1]))
+
 		print 'Gless_fortran_time:', time()-ts
 
 		return 1j*Gless
