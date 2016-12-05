@@ -11,8 +11,9 @@ class TbModel:
 
 		self.QnIni = QnIni
 		self.kall = np.array(kall)
-		self.model_dim = model_dim 
+		self.model_dim = model_dim#np.shape(kall)[1] 
 		self.save_name  = 'name'+ QnIni.save_name
+		self.tb_model = True
 
 	def phi_kall(self):
 
@@ -20,8 +21,10 @@ class TbModel:
 		model_dim = self.model_dim
 		if model_dim ==1:
 			cvec = np.array(map(self.phi_k1D, kall))
-		elif model_dim ==2:
-			cvec = np.array(map(self.phi_k2D, kall[0], kall[1]))
+		elif model_dim == 4:
+			cvec = np.array(map(self.phi_k4D, kall[0], kall[1],kall[2],kall[3]))
+		else:
+			print 'dimension is wrong'
 
 		return np.swapaxes(cvec[:,:,:,0],1,2)
 
@@ -29,17 +32,16 @@ class TbModel:
 	def phi_k1D(self,kx):
 		
 		self.QnIni.k = kx 
-		qnmodel = QnModel(self.QnIni, tb_model = True)
+		qnmodel = QnModel(self.QnIni, tb_model = self.tb_model)
 		phit = qnmodel.phi_t()
 
 		return phit
 
 
-	def phi_k2D(self,kx,ky):
+	def phi_k4D(self,ki,kx,ky,kz):
 
-		self.QnIni.k = [kx,ky]
-		self.QnIni.ham_val = 4
-		qnmodel = QnModel(self.QnIni, tb_model = True)
+		self.QnIni.k = [ki,kx,ky,kz]
+		qnmodel = QnModel(self.QnIni, tb_model = self.tb_model)
 		phit = qnmodel.phi_t()
 
 		return phit
@@ -63,10 +65,10 @@ if __name__ == "__main__":
 	deltau = .5#-.3
 	keps = np.linspace(-np.pi,np.pi,knum)
 
-	n_tot = 4000 
-	t_rel = (np.array(range(n_tot-1))-2000)*dt
+	n_tot = 400 
+	t_rel = (np.array(range(n_tot-1))-200)*dt
 	ctrli =  E0 * np.cos(freq*t_rel)
-	ki = 0.0001
+	ki = [0.0001]
 	cond1 = QnIni(k=ki, ctrlt=ctrli)
 
 	ti = time()

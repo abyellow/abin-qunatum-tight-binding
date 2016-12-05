@@ -17,7 +17,7 @@ class QnModel:
 		self.ctrlt = QnIni.ctrlt #np.array(ctrlt)  #initial control/laser
 		self.H0 = QnIni.H0          #Hamiltonian with no control/laser
 		self.Hctrl = QnIni.ham_t()#np.array(Hctrlt)    #Hamiltonian of control/laser term
-		self.phi_i = QnIni.phi_i()    #initial quantum states
+		self.phi_i = QnIni.phi_i(state='mix')    #initial quantum states
 		self.dt = QnIni.dt          #time step size
 
 		self.tb_model = tb_model 
@@ -28,20 +28,16 @@ class QnModel:
 		self.real_tim = np.array(range(self.tim_all+1)) * self.dt +\
 				 self.t_ini	       #real time of time length 
 
-		self.pau_x = np.array([[0,1],[1,0]])
-		self.pau_y = np.array([[0,-1j],[1j,0]])
-		self.pau_z = np.array([[1,0],[0,-1]])
+
 		self.pau_i = np.array([[1,0],[0,1]])
-		
+
 
 	def u_dt(self, H, tim):
+		
 		"""propagator of dt time"""
 		if self.tb_model:
 			#cond = QnIni(k=self.k,ctrlt=self.ctrlt)
 			dx,dy,dz = self.QnIni.dvec(self.ctrlt[tim]) 
-			#dx = np.real(np.trace(np.dot(self.pau_x,H))/2.)#self.dvec(k,ctrlt)
-			#dy = np.real(np.trace(np.dot(self.pau_y,H))/2.)#self.dvec(k,ctrlt)
-			#dz = np.real(np.trace(np.dot(self.pau_z,H))/2.)
 			d = np.sqrt(dx**2 + dy**2 + dz**2)*self.dt
 			u =  np.cos(d)*self.pau_i -1j*self.dt/d*np.sin(d)*H
 
@@ -103,11 +99,6 @@ class QnIni:
 		self.tau = tau
 		self.deltau = deltau
 
-		self.pau_x = np.array([[0,1],[1,0]])
-		self.pau_y = np.array([[0,-1j],[1j,0]])
-		self.pau_z = np.array([[1,0],[0,-1]])
-		self.pau_i = np.array([[1,0],[0,1]])
-
 		self.H0 = np.zeros((2,2))
 		self.save_name = 'save_name'
 
@@ -127,8 +118,6 @@ class QnIni:
 			deltau = -deltau
 			dx = tau+deltau + (tau-deltau) * np.cos(k-ctrl) 
 			dy = (tau-deltau) * np.sin(k-ctrl) 
-			#dx = tau+deltau+ctrlt + (tau-deltau-ctrlt) * np.cos(k) 
-			#dy = (tau-deltau-ctrlt) * np.sin(k) 
 			dz = 0
 
 		elif val == 2:
@@ -154,8 +143,13 @@ class QnIni:
 
 	def ham(self,ctrl):
 
+		pau_x = np.array([[0,1],[1,0]])
+		pau_y = np.array([[0,-1j],[1j,0]])
+		pau_z = np.array([[1,0],[0,-1]])
+		pau_i = np.array([[1,0],[0,1]])
+
 		dx,dy,dz = self.dvec(ctrl)
-		return self.pau_x * dx + self.pau_y * dy + self.pau_z * dz
+		return pau_x * dx + pau_y * dy + pau_z * dz
 	
 	def ham_t(self):
 		ctrlt = self.ctrlt
@@ -166,13 +160,13 @@ class QnIni:
 		w,v = np.linalg.eigh(self.ham(ctrl=0))
 
 		if state == 'mix':
-			return ((v[:,0]+v[:,1])/np.sqrt(2)).reshape(2,1)
+			return ((v[:,0]+v[:,1])/np.sqrt(2)).reshape(len(v[:,0]),1)
 
 		elif state == 'down':
-			return v[:,0].reshape(2,1)
+			return v[:,0].reshape(len(v[:,0]),1)
 
 		elif state == 'up':
-			return v[:,1].reshape(2,1)
+			return v[:,1].reshape(len(v[:,1]),1)
 		else: 
 			print 'no such state!!'
 	

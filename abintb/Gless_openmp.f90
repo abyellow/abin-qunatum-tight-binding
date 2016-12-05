@@ -1,14 +1,13 @@
    
-   subroutine Gless_v2(c_vec1,c_vec2,den,n_t,n_k,Gans)
+   subroutine Gless(c_vec1,c_vec2,den,n_t,n_k,Gans,n_v)
 
     implicit none
     !f2py threadsafe
     include "omp_lib.h"
 
-    integer*4, intent(in) :: n_t     
-    integer*4, intent(in) :: n_k     
-    complex*16, dimension(n_k,2,n_t), intent(in) :: c_vec1
-    complex*16, dimension(n_k,2,n_t), intent(in) :: c_vec2
+    integer*4, intent(in) :: n_t, n_k, n_v 
+    complex*16, dimension(n_k,n_v,n_t), intent(in) :: c_vec1
+    complex*16, dimension(n_k,n_v,n_t), intent(in) :: c_vec2
     real*8, dimension(n_k,2), intent(in) :: den 
     complex*16, dimension(n_t,n_t), intent(out) :: Gans 
     integer*4 :: t1 
@@ -22,5 +21,5 @@
     end do
     !OMP END PARALLEL DO
 
-   end subroutine Gless_v2 
+   end subroutine Gless 
 

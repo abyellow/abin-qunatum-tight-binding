@@ -67,9 +67,9 @@ class PES:
 		ts = time()	
 		Gless = np.matrix(np.zeros((n_tot,n_tot),dtype=complex))
 		if self.parallel ==True:
-			Gless = Glf90_omp.gless_v2(np.conj(c_veck1), c_veck2, denk, n_tot, k_tot)/(2*np.sum(denk[:,0]*denk[:,1]))
+			Gless = Glf90_omp.gless(np.conj(c_veck1), c_veck2, denk, n_tot, k_tot)/(2*np.sum(denk[:,0]*denk[:,1]))
 		else:
-			Gless = Glf90.gless_v2(np.conj(c_veck1), c_veck2, denk, n_tot, k_tot)/(2*np.sum(denk[:,0]*denk[:,1]))
+			Gless = Glf90.gless(np.conj(c_veck1), c_veck2, denk, n_tot, k_tot)/(2*np.sum(denk[:,0]*denk[:,1]))
 
 		print 'Gless_fortran_time:', time()-ts
 
