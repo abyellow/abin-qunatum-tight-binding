@@ -17,7 +17,7 @@ class QnModel:
 		self.ctrlt = QnIni.ctrlt #np.array(ctrlt)  #initial control/laser
 		self.H0 = QnIni.H0          #Hamiltonian with no control/laser
 		self.Hctrl = QnIni.ham_t()#np.array(Hctrlt)    #Hamiltonian of control/laser term
-		self.phi_i = QnIni.phi_i(state='mix')    #initial quantum states
+		self.phi_i = QnIni.phi_i()    #initial quantum states
 		self.dt = QnIni.dt          #time step size
 
 		self.tb_model = tb_model 
@@ -90,7 +90,7 @@ class QnModel:
 
 class QnIni:
 
-	def __init__(self, k, ctrlt, dt = .1, tau=1.,deltau=.5, ham_val=0):
+	def __init__(self, k, ctrlt, dt = .1, tau=1.,deltau=.5, ham_val=0,state='mix'):
 
 		self.dt = dt	
 		self.k = k
@@ -98,7 +98,7 @@ class QnIni:
 		self.ham_val = ham_val
 		self.tau = tau
 		self.deltau = deltau
-
+		self.state = state 
 		self.H0 = np.zeros((2,2))
 		self.save_name = 'save_name'
 
@@ -155,8 +155,8 @@ class QnIni:
 		ctrlt = self.ctrlt
 		return np.array(map(self.ham,ctrlt))
 
-	def phi_i(self, state = 'down'):
-
+	def phi_i(self):
+		state = self.state
 		w,v = np.linalg.eigh(self.ham(ctrl=0))
 
 		if state == 'mix':
