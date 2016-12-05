@@ -2,5 +2,7 @@ all:
 	#f2py -c --f90flags=' -fPIC -O3 -funroll-loops -ffast-math -march=native ' -m Glf90 Gless.f90 --fcompiler=gnu95
 	#f2py -c --f90flags=' -fPIC -fopenmp -O3 -funroll-loops -ffast-math -march=native ' -lgomp -m Glf90_omp Gless_openmp.f90 --fcompiler=gnu95
 	
+	
+	f2py -c --f90flags=' -fPIC -O3' -m dotf90 fdot.f90 --fcompiler=gnu95
 	f2py -c --f90flags=' -fPIC -O3' -m Glf90 Gless.f90 --fcompiler=gnu95
 	f2py -c --f90flags=' -fPIC -fopenmp -O3 ' -lgomp -m Glf90_omp Gless_openmp.f90 --fcompiler=gnu95

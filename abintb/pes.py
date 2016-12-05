@@ -6,6 +6,7 @@ from time import time
 import Glf90_omp 
 import Glf90 
 import qn, tb
+#from dotf90 import fdot 
 
 class PES:
 
@@ -94,6 +95,7 @@ class PES:
 			n_ub = n_tp + n_std
 			st_vec1 = np.matrix(self.st_vec(tp,omega))
 			PES = (np.conj(st_vec1)*Glsk[n_lb:n_ub,n_lb:n_ub]*(st_vec1).T)[0,0]
+			#PES = fdot(np.conj(st_vec1),fdot(Glsk[n_lb:n_ub,n_lb:n_ub],(st_vec1).T))[0,0]
 		
 		return np.imag(PES)
 
