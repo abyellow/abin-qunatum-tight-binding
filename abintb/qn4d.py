@@ -24,7 +24,7 @@ class qn4d:#(qn.QnIni):
 		self.state = state
 		self.save_name = 'cone_save_name'
 
-	def dvec(self,ctrlx,ctrly):
+	def dvec(self,ctrlx,ctrly,ctrlz):
 
 		k0 = self.k0
 		k  = self.k
@@ -34,18 +34,18 @@ class qn4d:#(qn.QnIni):
 		di = v0 * (k[0] - k0[0])
 		dx = vf * (k[1] - ctrlx - k0[1])
 		dy = vf * (k[2] - ctrly - k0[2])
-		dz = vf * (k[3] - k0[3])
+		dz = vf * (k[3] - ctrlz - k0[3])
 
 		return [di,dx,dy,dz]
 
-	def ham(self,ctrlx,ctrly):
+	def ham(self,ctrlx,ctrly,ctrlz):
 
                 pau_i = np.array([[1,0],[0,1]])
                 pau_x = np.array([[0,1],[1,0]])
                 pau_y = np.array([[0,-1j],[1j,0]])
                 pau_z = np.array([[1,0],[0,-1]])
 
-                d = self.dvec(ctrlx,ctrly)
+                d = self.dvec(ctrlx,ctrly,ctrlz)
                 cone = pau_i * d[0] + pau_x * d[1] + pau_y * d[2] + pau_z * d[3]
 		m0 = 0. * np.identity(2)
 		h = np.bmat([[cone,m0],[m0,-cone]])#.reshape((4,4))
@@ -54,13 +54,13 @@ class qn4d:#(qn.QnIni):
 
 	def ham_t(self):
 		ctrlt = self.ctrlt
-		return np.array(map(self.ham,ctrlt[0],ctrlt[1]))
+		return np.array(map(self.ham,ctrlt[0],ctrlt[1],ctrlt[2]))
 
 
 	def phi_i(self):
 
 		state= self.state
-		w,v = np.linalg.eigh(self.ham(ctrlx=0,ctrly=0))
+		w,v = np.linalg.eigh(self.ham(ctrlx=0,ctrly=0,ctrlz=0))
 
 		if state == 'down':
 			return v[:,0].reshape(len(v[:,0]),1)
@@ -75,7 +75,7 @@ class qn4d:#(qn.QnIni):
 			return v[:,3].reshape(len(v[:,1]),1)
 
 		elif state == 'mix':
-			return ((v[:,0]+v[:,1])/np.sqrt(2)).reshape(len(v[:,0]),1)
+			return ((v[:,0]+v[:,3])/np.sqrt(2)).reshape(len(v[:,0]),1)
 
 		elif state == 'mix2':
                         return ((v[:,0]+v[:,1]+v[:,2]+v[:,3])/np.sqrt(4)).reshape(len(v[:,0]),1)
@@ -83,8 +83,8 @@ class qn4d:#(qn.QnIni):
 			print 'no such state!!'
 
 
-	def eig_energy(self,ctrlx=0,ctrly=0):
-		w, v = np.linalg.eigh(self.ham(ctrlx,ctrly))
+	def eig_energy(self,ctrlx=0,ctrly=0,ctrlz=0):
+		w, v = np.linalg.eigh(self.ham(ctrlx,ctrly,ctrlz))
 		return w
 
 
@@ -108,8 +108,7 @@ if __name__=='__main__':
 	cond1.state = 'up2'
 	print cond1.phi_i()
 	cond1.state = 'mix2'
-	#print cond1.phi_i(state='mix2')
-	#print cond1.phi_i(state='mix4')
+	print cond1.phi_i()
 
 
 
@@ -126,7 +125,7 @@ if __name__=='__main__':
 	knum = 10
 	keps = np.linspace(-np.pi,np.pi,knum)
 	k0 = np.zeros(knum) +0.001
-	kall = np.array([k0,k0,k0,keps])#.T
+	kall = np.array([k0,keps,k0,k0])#.T
 	#print np.shape(kall)
 	tb1 = tb.TbModel(cond1,kall,model_dim = 4)
 	tb1.tb_model= False

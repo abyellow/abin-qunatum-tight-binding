@@ -43,6 +43,15 @@ class PES:
 		elif pau == 'y':
 			c_vec2[:,0,:], c_vec2[:,1,:] = 1j*c_vec1[:,1,:], -1j*c_vec1[:,0,:] 
 
+		elif pau == 'rz':
+			c_vec2[:,2,:], c_vec2[:,3,:] = c_vec1[:,3,:], -c_vec1[:,2,:] 
+
+		elif pau == 'rx':
+			c_vec2[:,2,:], c_vec2[:,3,:] = c_vec1[:,3,:], c_vec1[:,2,:] 
+
+		elif pau == 'ry':
+			c_vec2[:,2,:], c_vec2[:,3,:] = 1j*c_vec1[:,3,:], -1j*c_vec1[:,2,:] 
+
 		else:
 			c_vec2[:] = c_vec1[:]
 		return c_vec2
@@ -58,7 +67,6 @@ class PES:
 		time = dt*np.array(range(n_t))+tp-t_rang
 		st_vec = dt*np.exp(-((time-tp)/std)**2)*np.exp(-1j*w*(time-tp))
 		return st_vec/np.sum(np.abs(st_vec))
-
 
 	def gen_lessG(self,c_veck1,c_veck2,denk):
 
