@@ -11,7 +11,7 @@ import qn, tb
 
 class qn4d:#(qn.QnIni):
 
-	def __init__(self, k, ctrlt, dt=.1, v0 = 1., vf = 1.,state='mix'):
+	def __init__(self, k, ctrlt, dt=.1, v0 = 1., vf = 1.,state='mix',model='cone'):
 
 		self.ctrlt = ctrlt
 		self.k = k 
@@ -19,26 +19,41 @@ class qn4d:#(qn.QnIni):
 		self.dt = dt
 		self.v0 = v0
 		self.vf = vf
+		self.tau = 1
 		self.H0 = np.zeros((4,4))
 		#qn.QnIni.__init__(self,k=0,ctrlt=np.zeros(100))
 		self.state = state
+		self.model = model
 		self.save_name = 'cone_save_name'
-
+		
 	def dvec(self,ctrlx,ctrly,ctrlz):
 
 		k0 = self.k0
 		k  = self.k
 		v0 = self.v0
 		vf = self.vf
+		model = self.model
 
-		di = v0 * (k[0] - k0[0])
-		dx = vf * (k[1] - ctrlx - k0[1])
-		dy = vf * (k[2] - ctrly - k0[2])
-		dz = vf * (k[3] - ctrlz - k0[3])
+		if model == 'cone':
+			di = v0 * (k[0] - k0[0])
+			dx = vf * (k[1] - ctrlx - k0[1])
+			dy = vf * (k[2] - ctrly - k0[2])
+			dz = vf * (k[3] - ctrlz - k0[3])
+
+		elif model == 'weyl':
+			di = 0# * (k[0] - k0[0])
+			dx = 2*vf * np.sin(k[2] - ctrlx)# - k0[1])
+			dy = 2*vf * np.sin(k[1] - ctrly)# - k0[2])
+			dz = 0#vf * (k[3] - ctrlz - k0[3])
 
 		return [di,dx,dy,dz]
 
 	def ham(self,ctrlx,ctrly,ctrlz):
+
+		k = self.k
+		model = self.model
+		v0 = self.v0
+		tau = self.tau
 
                 pau_i = np.array([[1,0],[0,1]])
                 pau_x = np.array([[0,1],[1,0]])
@@ -47,8 +62,15 @@ class qn4d:#(qn.QnIni):
 
                 d = self.dvec(ctrlx,ctrly,ctrlz)
                 cone = pau_i * d[0] + pau_x * d[1] + pau_y * d[2] + pau_z * d[3]
-		m0 = 0. * np.identity(2)
-		h = np.bmat([[cone,m0],[m0,-cone]])#.reshape((4,4))
+
+		if model=='cone':
+			m0 = 0. * np.identity(2)
+
+		elif model=='weyl':
+			Mk = np.identity(2)*(6*tau - 2*tau*(np.cos(k[1])+np.cos(k[2])+np.cos(k[3]))) 
+			m0 = Mk  -1j*2*v0*np.sin(k[3])
+
+		h = np.bmat([[cone,m0],[np.conj(m0),-cone]])#.reshape((4,4))
 
 		return h
 
@@ -95,9 +117,9 @@ if __name__=='__main__':
 	dt = .1
 	tnum = 400
 	t_rel = np.linspace(-20,20,tnum-1)
-	ctrlt = [np.cos(t_rel),np.sin(t_rel)]
-	
-	cond1 = qn4d(k=[0,1,2,3],ctrlt = ctrlt,state='mix')
+	ctrlt = [np.cos(t_rel),np.sin(t_rel),0 * t_rel]
+	model1 = 'weyl'
+	cond1 = qn4d(k=[0,1,2,3],ctrlt = ctrlt,state='mix',model=model1)
 	print cond1.phi_i()
 	cond1.state = 'down'
 	print cond1.phi_i()

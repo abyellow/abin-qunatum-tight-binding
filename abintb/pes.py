@@ -52,6 +52,19 @@ class PES:
 		elif pau == 'ry':
 			c_vec2[:,2,:], c_vec2[:,3,:] = 1j*c_vec1[:,3,:], -1j*c_vec1[:,2,:] 
 
+		elif pau == 'xrx':
+			c_vec2[:,0,:], c_vec2[:,1,:] = c_vec1[:,1,:], c_vec1[:,0,:] 
+			c_vec2[:,2,:], c_vec2[:,3,:] = c_vec1[:,3,:], c_vec1[:,2,:] 
+
+		elif pau == 'yry':
+			c_vec2[:,0,:], c_vec2[:,1,:] = 1j*c_vec1[:,1,:], -1j*c_vec1[:,0,:] 
+			c_vec2[:,2,:], c_vec2[:,3,:] = 1j*c_vec1[:,3,:], -1j*c_vec1[:,2,:] 
+
+		elif pau == 'zrz':
+			c_vec2[:,0,:], c_vec2[:,1,:] = c_vec1[:,0,:], -c_vec1[:,1,:] 
+			c_vec2[:,2,:], c_vec2[:,3,:] = c_vec1[:,3,:], -c_vec1[:,2,:] 
+	
+
 		else:
 			c_vec2[:] = c_vec1[:]
 		return c_vec2
