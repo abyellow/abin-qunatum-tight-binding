@@ -11,7 +11,7 @@ import qn, tb
 
 class qn4d:#(qn.QnIni):
 
-	def __init__(self, k, ctrlt, dt=.1, v0 = 1., vf = 1.,state='mix',model='cone'):
+	def __init__(self, k, ctrlt, dt=.1, v0 = 0., vf = 1.,state='mix',model='cone'):
 
 		self.ctrlt = ctrlt
 		self.k = k 
@@ -24,7 +24,7 @@ class qn4d:#(qn.QnIni):
 		#qn.QnIni.__init__(self,k=0,ctrlt=np.zeros(100))
 		self.state = state
 		self.model = model
-		self.save_name = 'cone_save_name'
+		self.save_name = 'qn4d_dt_%.2f_v0_%.2f_vf_%.2f_state_%s_model_%s'%(dt,v0,vf,state,model)
 		
 	def dvec(self,ctrlx,ctrly,ctrlz):
 

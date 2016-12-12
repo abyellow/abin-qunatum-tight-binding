@@ -28,6 +28,8 @@ class PES:
 		self.w_num = 200
 		self.w_int = np.linspace(-np.pi,np.pi,self.w_num)
 		self.parallel = False
+		self.save_name = 'PES_'+QnIni.save_name+'_std_%d_pau_%s_tin_%d'%(std,pau,tin)
+
 
 	def gen_cvec2(self,pau):
 		
@@ -41,7 +43,7 @@ class PES:
 			c_vec2[:,0,:], c_vec2[:,1,:] = c_vec1[:,1,:], c_vec1[:,0,:] 
 
 		elif pau == 'y':
-			c_vec2[:,0,:], c_vec2[:,1,:] = 1j*c_vec1[:,1,:], -1j*c_vec1[:,0,:] 
+			c_vec2[:,0,:], c_vec2[:,1,:] = -1j*c_vec1[:,1,:], 1j*c_vec1[:,0,:] 
 
 		elif pau == 'rz':
 			c_vec2[:,2,:], c_vec2[:,3,:] = c_vec1[:,3,:], -c_vec1[:,2,:] 
@@ -50,15 +52,15 @@ class PES:
 			c_vec2[:,2,:], c_vec2[:,3,:] = c_vec1[:,3,:], c_vec1[:,2,:] 
 
 		elif pau == 'ry':
-			c_vec2[:,2,:], c_vec2[:,3,:] = 1j*c_vec1[:,3,:], -1j*c_vec1[:,2,:] 
+			c_vec2[:,2,:], c_vec2[:,3,:] = -1j*c_vec1[:,3,:], 1j*c_vec1[:,2,:] 
 
 		elif pau == 'xrx':
 			c_vec2[:,0,:], c_vec2[:,1,:] = c_vec1[:,1,:], c_vec1[:,0,:] 
 			c_vec2[:,2,:], c_vec2[:,3,:] = c_vec1[:,3,:], c_vec1[:,2,:] 
 
 		elif pau == 'yry':
-			c_vec2[:,0,:], c_vec2[:,1,:] = 1j*c_vec1[:,1,:], -1j*c_vec1[:,0,:] 
-			c_vec2[:,2,:], c_vec2[:,3,:] = 1j*c_vec1[:,3,:], -1j*c_vec1[:,2,:] 
+			c_vec2[:,0,:], c_vec2[:,1,:] = -1j*c_vec1[:,1,:], 1j*c_vec1[:,0,:] 
+			c_vec2[:,2,:], c_vec2[:,3,:] = -1j*c_vec1[:,3,:], 1j*c_vec1[:,2,:] 
 
 		elif pau == 'zrz':
 			c_vec2[:,0,:], c_vec2[:,1,:] = c_vec1[:,0,:], -c_vec1[:,1,:] 
@@ -162,40 +164,40 @@ class PES:
 			PESk = self.gen_PESk(k,tp)
 			PES2D.append(PESk)
 
-		save_name = 'data/'+self.QnIni.save_name+'.txt'	
-		np.savetxt(save_name,zip(*PES2D))
+		#self.save_name = self.save_name+'_tp_'+tp#+'.txt'
+		#np.savetxt('data/'+save_name+'.txt', zip(*PES2D))
 		
 		return zip(*PES2D)
 
 		
 
-	def plot(self,PESmtx,ax,bar_val=True,label_val=True, color = 'RdYlBu'):
+def plot(PESmtx,ax,bar_val=True,label_val=True, color = 'RdYlBu'):
 
-		cax = ax.imshow(PESmtx,cmap = color, vmin=-1.,vmax=1.,norm=SymLogNorm(10**-4),\
-					 extent = [-3.14/2.,3.14/2.,-3.14,3.14])
-		
-		fsize = 16
-		plt.xticks([-1.5,-.75,0.0,.75,1.5], ['-1.0','-0.5','0.0','0.5','1.0'],fontsize = fsize)
-		plt.yticks([-3,-2,-1,0,1,2,3], ['-3','-2','-1','0','1','2','3'],fontsize = fsize)
-		if label_val:
-			xlab = r' $k ( a/ \pi )$'
-			ylab = r'Energy / $\tau$'
-			plt.xlabel(xlab, fontsize = fsize)
-			plt.ylabel(ylab, fontsize = fsize)
+	cax = ax.imshow(PESmtx,cmap = color, vmin=-1.,vmax=1.,norm=SymLogNorm(10**-4),\
+				 extent = [-3.14/2.,3.14/2.,-3.14,3.14])
+	
+	fsize = 16
+	plt.xticks([-1.5,-.75,0.0,.75,1.5], ['-1.0','-0.5','0.0','0.5','1.0'],fontsize = fsize)
+	plt.yticks([-3,-2,-1,0,1,2,3], ['-3','-2','-1','0','1','2','3'],fontsize = fsize)
+	if label_val:
+		xlab = r' $k ( a/ \pi )$'
+		ylab = r'Energy / $\tau$'
+		plt.xlabel(xlab, fontsize = fsize)
+		plt.ylabel(ylab, fontsize = fsize)
 
-		if bar_val:
-			tick_labels=['-0.500','-0.005','0.000','0.005','0.500']
-			tick_locs=[-0.50,-0.005,0.00,0.005,0.50]
-			bar = plt.colorbar(cax,ticks=tick_locs,shrink=0.6)
-			bar.set_ticklabels(tick_labels)
-			bar.update_ticks()
-		return cax
+	if bar_val:
+		tick_labels=['-0.500','-0.005','0.000','0.005','0.500']
+		tick_locs=[-0.50,-0.005,0.00,0.005,0.50]
+		bar = plt.colorbar(cax,ticks=tick_locs,shrink=0.6)
+		bar.set_ticklabels(tick_labels)
+		bar.update_ticks()
+	return cax
 
 
 
 if __name__ == "__main__":
 
-	
+
 	dt = .1
 	E0 = 1. 
 	knum = 10 

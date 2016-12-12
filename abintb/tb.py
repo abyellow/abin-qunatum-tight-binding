@@ -12,7 +12,7 @@ class TbModel:
 		self.QnIni = QnIni
 		self.kall = np.array(kall)
 		self.model_dim = model_dim#np.shape(kall)[1] 
-		self.save_name  = 'name'+ QnIni.save_name
+		self.save_name  = 'tb_'+ QnIni.save_name
 		self.tb_model = True
 
 	def phi_kall(self):
